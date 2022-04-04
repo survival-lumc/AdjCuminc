@@ -1,4 +1,4 @@
-#' @title Simulate Balanced Competing Risk Data under the Cause-Specific Hazards Model
+#' @title Simulating Balanced Competing Risk Data under the Cause-Specific Hazards Model
 #'
 #' @description The purpose of this function is to simulate a competing risks data set from the cause-specific hazard model, with the following set of predictors: a strata (cohort), a discrete covariate (mutation), and a continuous covariate (age). The observation times are simulated according to the latent competing risk approach, where the first event can censor the event of interest.
 #'
