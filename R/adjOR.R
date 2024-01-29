@@ -11,17 +11,17 @@
 #' @return A `data.frame` containing the covariate adjusted cumulative incidence curves per strata
 #' @export
 #' @import riskRegression
+#' @import survival
 #' @importFrom stats model.frame terms
 #'
 #' @examples
-#' bc_data <- simCSH(N = 1000, k = 2,
-#'     base_haz = c(1, 1), beta_coef = list(c(-0.5, 2, 0.5),
-#' c(0.3, 1, -0.4)))
-#' bc_cuminc <- adjOR(Surv(obs_time, status) ~ cohort + age + mutation,
-#' strata = "cohort",
-#' ref = "control",
-#' data = bc_data,
-#' times = seq(0, 1, 0.05))
+#' df <- simCSH(N = 1000, k = 2,
+#'   theta_coef = c(-1, -0.5),
+#'   beta_coef = list(c(1, -1, 0.5), c(-1, 1, -0.5)),
+#'   base_haz = c(2, -2))
+#' df_OR <- adjOR(Surv(obs_time, status) ~ treatment + x1 + x2, data = df,
+#'   strata = "treatment", times = seq(0, 1.5, 0.05))
+
 adjOR <- function(formula, strata, ref = NULL, data = NULL, times = NULL){
 
   # Extract components from formula object and convert to model matrix
@@ -47,7 +47,7 @@ adjOR <- function(formula, strata, ref = NULL, data = NULL, times = NULL){
     xtime <- times
   }
 
-  # Construct dummy data w/ every observation for each cohort
+  # Construct dummy data w/ every observation for each strata
   if(is.null(ref)){
     dummy <- do.call("rbind",
                      replicate(nlevels(tmp$strata), tmp[, -3],

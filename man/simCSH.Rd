@@ -2,28 +2,30 @@
 % Please edit documentation in R/simCSH.R
 \name{simCSH}
 \alias{simCSH}
-\title{Simulate Balanced Competing Risk Data under the Cause-Specific Hazards Model}
+\title{Simulating Balanced Competing Risk Data under the Cause-Specific Hazards Model}
 \usage{
-simCSH(N, k, base_haz, beta_coef)
+simCSH(N, k, theta_coef, beta_coef, base_haz)
 }
 \arguments{
-\item{N}{The number of observations to be generated.}
+\item{N}{the number of observations to be generated.}
 
-\item{k}{The number of competing outcomes to be generated.}
+\item{k}{the number of competing outcomes to be generated.}
+
+\item{theta_coef}{a vector where each element represents the coefficient of treatment on the hazard of each event.}
+
+\item{beta_coef}{a list where the number of elements is equal to the number of competing outcomes. Aach listed element is a vector of covariate coefficients associated with a competing outcome. The first element in the vector is the effect size of the cohort, the second element the effect of the discrete covariate, and the third element the effect of the continuous covariate.}
 
 \item{base_haz}{a baseline hazard for each competing outcome}
-
-\item{beta_coef}{A list where the number of elements is equal to the number of competing outcomes. Aach listed element is a vector of covariate coefficients associated with a competing outcome. The first element in the vector is the effect size of the cohort, the second element the effect of the discrete covariate, and the third element the effect of the continuous covariate.}
 }
 \value{
-A `data.frame` containing simulated observation times, a status indicator, cohort assignments, a discrete covariate (mutation), and a continuous covariate (age)
+A `data.frame` containing simulated observation times, a status indicator, treatment assignments, a discrete covariate (x1), and a continuous covariate (x2)
 }
 \description{
-The purpose of this function is to simulate a competing risks data set from the cause-specific hazard model, with the following set of predictors: a strata (cohort), a discrete covariate (mutation), and a continuous covariate (age). The observation times are simulated according to the latent competing risk approach, where the first event can censor the event of interest.
+The purpose of this function is to simulate a competing risks data set from the cause-specific hazard model, with the following set of predictors: a strata (treatment), a discrete covariate (x1), and a continuous covariate (x2). The observation times are simulated according to the latent competing risk approach, where the first event can censor the event of interest.
 }
 \examples{
-simCSH(N = 1000,
-k = 2,
-base_haz = c(1, 1),
-beta_coef = list(c(-0.5, 2, 0.5), c(0.3, 1, -0.4)))
+simCSH(N = 10000, k = 2,
+  theta_coef = c(-1, -0.5),
+  beta_coef = list(c(1, -1, 0.5), c(-1, 1, -0.5)),
+  base_haz = c(2, -2))
 }

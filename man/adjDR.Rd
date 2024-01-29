@@ -24,11 +24,10 @@ A `data.frame` containing the covariate adjusted cumulative incidence curves per
 Generates covariate adjusted cumulative incidence curves via doubly robust.
 }
 \examples{
-bc_data <- simCSH(N = 1000, k = 2,
-    base_haz = c(1, 1), beta_coef = list(c(-0.5, 2, 0.5), c(0.3, 1, -0.4)))
-bc_cuminc <- adjDR(Surv(obs_time, status) ~ cohort + age + mutation,
-strata = "cohort",
-ref = "control",
-data = bc_data,
-times = seq(0, 1, 0.05))
+df <- simCSH(N = 1000, k = 2,
+  theta_coef = c(-1, -0.5),
+  beta_coef = list(c(1, -1, 0.5), c(-1, 1, -0.5)),
+  base_haz = c(2, -2))
+df_DR <- adjDR(Surv(obs_time, status) ~ treatment + x1 + x2, data = df,
+  strata = "treatment", times = seq(0, 1.5, 0.05))
 }

@@ -10,12 +10,14 @@
 #' @importFrom stats glm predict
 #'
 #' @examples
-#' bc_data <- simCSH(N = 1000, k = 2,
-#'     base_haz = c(1, 1), beta_coef = list(c(-0.5, 2, 0.5), c(0.3, 1, -0.4)))
-#' bc_data$ipw <- IPW(cohort ~ age + mutation, data = bc_data)
-#' library(survival)
-#' bc_cuminc <- survfit(Surv(obs_time, status) ~ cohort, data = bc_data, weights = ipw)
-IPW <- function(formula, data = NULL) {
+#' df <- simCSH(N = 1000, k = 2,
+#'   theta_coef = c(-1, -0.5),
+#'   beta_coef = list(c(1, -1, 0.5), c(-1, 1, -0.5)),
+#'   base_haz = c(2, -2))
+#' df$ipw <- adjIPW(cohort ~ age + mutation, data = df)
+#' df_IPW <- survfit(Surv(obs_time, status) ~ cohort, data = df, weights = ipw)
+
+adjIPW <- function(formula, data = NULL) {
 
   # Deconstruct formula object
   resp <- paste(attr(terms(formula, data = data), which = "variables")[2])
@@ -32,7 +34,7 @@ IPW <- function(formula, data = NULL) {
                                 type = "response")
   }
 
-  # Match observed cohort with ipw_ref matrix
+  # Match observed treatment with ipw_ref matrix
   ipw <- numeric(nrow(ipw_ref))
   for(j in 1:nrow(ipw_ref)){
     ipw[j] <- ipw_ref[j, which(resp_obs[j] == levels(resp_obs))]

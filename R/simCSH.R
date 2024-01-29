@@ -1,33 +1,38 @@
 #' @title Simulating Balanced Competing Risk Data under the Cause-Specific Hazards Model
 #'
-#' @description The purpose of this function is to simulate a competing risks data set from the cause-specific hazard model, with the following set of predictors: a strata (cohort), a discrete covariate (mutation), and a continuous covariate (age). The observation times are simulated according to the latent competing risk approach, where the first event can censor the event of interest.
+#' @description The purpose of this function is to simulate a competing risks data set from the cause-specific hazard model, with the following set of predictors: a strata (treatment), a discrete covariate (x1), and a continuous covariate (x2). The observation times are simulated according to the latent competing risk approach, where the first event can censor the event of interest.
 #'
-#' @param N The number of observations to be generated.
-#' @param k The number of competing outcomes to be generated.
+#' @param N the number of observations to be generated.
+#' @param k the number of competing outcomes to be generated.
+#' @param theta_coef a vector where each element represents the coefficient of treatment on the hazard of each event.
 #' @param base_haz a baseline hazard for each competing outcome
-#' @param beta_coef A list where the number of elements is equal to the number of competing outcomes. Aach listed element is a vector of covariate coefficients associated with a competing outcome. The first element in the vector is the effect size of the cohort, the second element the effect of the discrete covariate, and the third element the effect of the continuous covariate.
+#' @param beta_coef a list where the number of elements is equal to the number of competing outcomes. Aach listed element is a vector of covariate coefficients associated with a competing outcome. The first element in the vector is the effect size of the cohort, the second element the effect of the discrete covariate, and the third element the effect of the continuous covariate.
 #'
-#' @return A `data.frame` containing simulated observation times, a status indicator, cohort assignments, a discrete covariate (mutation), and a continuous covariate (age)
+#' @return A `data.frame` containing simulated observation times, a status indicator, treatment assignments, a discrete covariate (x1), and a continuous covariate (x2)
 #' @export
 #' @importFrom stats quantile rbinom rexp rnorm runif
 #'
 #' @examples
-#' simCSH(N = 1000,
-#' k = 2,
-#' base_haz = c(1, 1),
-#' beta_coef = list(c(-0.5, 2, 0.5), c(0.3, 1, -0.4)))
-simCSH <- function(N, k, base_haz, beta_coef) {
+#' simCSH(N = 10000, k = 2,
+#'   theta_coef = c(-1, -0.5),
+#'   beta_coef = list(c(1, -1, 0.5), c(-1, 1, -0.5)),
+#'   base_haz = c(2, -2))
+
+simCSH <- function(N, k, theta_coef, beta_coef, base_haz) {
 
   # covariate simulation
-  age <- rnorm(N)
-  mutant_type <- sample(c(0, 1, 2), N, c(1/3, 1/3, 1/3), replace = T)
-  cohort <- rbinom(N, 1, 0.5)
-  X <- as.matrix(data.frame(cohort, mutant_type, age))
+  x1 <- t(rmultinom(N, 1, c(1/3, 1/3, 1/3)))[, -1]
+  x2 <- rnorm(N)
+  X <- cbind(x1, x2)
+  Z <- rbinom(N, 1, 0.5)
+
+  # Induce non-linear baseline difference conditional on x2
+  base_hazard <- ifelse(X[, 3] > 1, base_haz[1], base_haz[2])
 
   # simulate event times per event k
   event_times <- matrix(NA, nrow = N, ncol = k)
   for(i in 1:k){
-    haz_fun <- base_haz[i] * exp(X %*% beta_coef[[i]])
+    haz_fun <- exp(base_hazard) * exp(Z * theta_coef[i] + X %*% beta_coef[[i]])
     event_times[, i] <- rexp(length(haz_fun), rate = haz_fun)
   }
 
@@ -41,9 +46,11 @@ simCSH <- function(N, k, base_haz, beta_coef) {
   obs_time <- pmin(censor_time, obs_time)
 
   # construct output
+  x1_label <- apply(X[, 1:2], 1,
+                    function(x) ifelse(sum(x) == 0, 0, which(x == 1)))
   sim_data <- data.frame(obs_time, status = factor(status),
-                         cohort = factor(ifelse(cohort == 1, "treat", "control")),
-                         mutation = factor(paste("stage", mutant_type)),
-                         age)
+                         treatment = factor(ifelse(Z == 1, "treat", "control")),
+                         x1 = factor(paste("stage", x1_label)),
+                         x2 = X[, 3])
   return(sim_data)
 }
