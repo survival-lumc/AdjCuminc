@@ -28,9 +28,10 @@ The code can be accesed by opening the `adjCuminc.Rproj` file in Rstudio.
 
 ## Contributions
 
-| Name                                                         | Affiliation                           | Role                                            |
-| ------------------------------------------------------------ | ------------------------------------- | ----------------------------------------------- |
-| [Patrick van Hage](https://github.com/pvanhage/)  | Institute of Biology Leiden (IBL) | Author .Rmd files/maintainer                    |
-| [Hein Putter](https://www.universiteitleiden.nl/en/staffmembers/hein-putter) | Leiden University Medical Center (NL) | Review of both .R and .Rmd scripts              |
-| [Nan van Geloven](https://www.universiteitleiden.nl/medewerkers/nan-van-geloven) | Leiden University Medical Center (NL) | Review of both .R and .Rmd scripts              |
-| [Saskia le Cessie](https://www.universiteitleiden.nl/medewerkers/saskia-le-cessie) | University Medical Centre Utrecht (NL)  | Review of both .R and .Rmd scripts              |
+| Name                                                         | Affiliation                           |
+| ------------------------------------------------------------ | ------------------------------------- | 
+| [Patrick van Hage](https://github.com/pvanhage/)  | Institute of Biology Leiden (IBL) | 
+| [Saskia le Cessie](https://www.universiteitleiden.nl/medewerkers/saskia-le-cessie) | University Medical Centre Utrecht (NL)  |
+| [Marissa van Maaren](https://research.utwente.nl/en/persons/marissa-c-van-maaren) | University of Twente |
+| [Hein Putter](https://www.universiteitleiden.nl/en/staffmembers/hein-putter) | Leiden University Medical Center (NL) | 
+| [Nan van Geloven](https://www.universiteitleiden.nl/medewerkers/nan-van-geloven) | Leiden University Medical Center (NL) |
