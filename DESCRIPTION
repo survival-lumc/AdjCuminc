@@ -1,6 +1,6 @@
 Package: AdjCuminc
 Type: Package
-Title: Performs Covariate Adjustment on Cumulative Incidence Curves for Competing Risks
+Title: Covariate Adjustment on Cumulative Incidence Curves for Competing Risks
 Version: 0.1.0
 Author: Patrick van Hage <p.vanhage@outlook.com>
 Maintainer: Patrick van Hage <p.vanhage@outlook.com>
