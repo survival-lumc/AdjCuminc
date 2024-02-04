@@ -17,6 +17,12 @@ The following scripts were used to validate these methods in a simulation study:
 
 ## Installation and usage
 
+R users
+
+```R
+remotes::install_github("survival-lumc/AdjCuminc")
+```
+
 Git users 
 
 ```bash
