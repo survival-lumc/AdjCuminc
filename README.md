@@ -1,5 +1,11 @@
 # Covariate Adjustment on Cumulative Incidence Curves for Competing Risks
 
+## Abstract
+
+Covariate imbalance between treatment groups makes it difficult to compare cumulative incidence curves in competing risk analyses. Different methods have been developed to estimate adjusted cumulative incidence curves, including inverse probability of treatment weighting and outcome regression modeling. For these methods to work, correct specification of the propensity score model or outcome regression model, respectively, is needed. We introduce a new doubly robust estimator, which requires correct specification of only one of the two models. We have conducted a simulation study to assess the performance of these three methods, including scenarios with model misspecification of the relationship between covariates and treatment and/or outcome. This repository provides an overview of these adjustments methods and their validation. 
+
+## Overview
+
 The repository contains the following functions related to covariate adjusted for competing risks:
 
 
