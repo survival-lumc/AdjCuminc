@@ -23,7 +23,7 @@ The following scripts were used to validate these methods in a simulation study:
 
 ## Installation and usage
 
-R users
+R users (restart R after installing)
 
 ```R
 remotes::install_github("survival-lumc/AdjCuminc")
