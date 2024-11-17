@@ -154,9 +154,9 @@ CumInc_df <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df))
 CumInc_Conf1 <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df_conf1))
 CumInc_IPW <- longCSH(survfit(Surv(obs_time, status) ~ treatment, 
                           data = df_conf1, weights = ipw))
-CumInc_OR <- gather(adjOR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+CumInc_OR <- gather(adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
               strata = "treatment", data = df_conf1), event, prob, 3:5)
-CumInc_DR <- gather(adjDR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+CumInc_DR <- gather(adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
               strata = "treatment", data = df_conf1), event, prob, 3:5)
 
 csh_CI <- rbind(CumInc_df, CumInc_Conf1, CumInc_IPW, CumInc_OR, CumInc_DR)
@@ -184,7 +184,7 @@ csh1
 
 ### Scenario 2. Adjustment of confounding by non-logistic treatment allocation 
 
-In this scheme, confounding is introduced as a non-logistic association between the treatments and continuous and discrete covariates. Here, the composition of the treatment group is solely affected by the aforementioned association with the covariates. This can be achieved by setting `control_ref = TRUE`. The control group can be used as a reference group for the Outcome regression modeling and doubly robust method. 
+In this scheme, confounding is introduced as a non-logistic association between the treatments and continuous and discrete covariates. Here, the composition of the treatment group is solely affected by the aforementioned association with the covariates. This can be achieved by setting `control_ref = TRUE`. The control group can be used as a reference group for the outcome regression modeling and doubly robust method. 
 
 ```{r}
 # Data simulation and biased sampling
@@ -208,17 +208,17 @@ df_conf2$ipw<- adjIPW(treatment ~ x1 + x2, data = df_conf2)
 
 # Perform adjustment and extract cumulative incidence curves
 CumInc_df <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df))
-CumInc_Conf1 <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df_conf2))
+CumInc_conf2 <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df_conf2))
 CumInc_IPW <- longCSH(survfit(Surv(obs_time, status) ~ treatment, 
                           data = df_conf2, weights = ipw))
-CumInc_OR <- gather(adjOR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+CumInc_OR <- gather(adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
               strata = "treatment", ref = "control", data = df_conf2), event, prob, 3:5)
-CumInc_DR <- gather(adjDR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+CumInc_DR <- gather(adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
               strata = "treatment", ref = "control", data = df_conf2), event, prob, 3:5)
 
-csh_CI <- rbind(CumInc_df, CumInc_Conf1, CumInc_IPW, CumInc_OR, CumInc_DR)
+csh_CI <- rbind(CumInc_df, CumInc_conf2, CumInc_IPW, CumInc_OR, CumInc_DR)
 csh_CI$method <- c(rep("Reference population", nrow(CumInc_df)),
-                   rep("Confounded treatment allocation", nrow(CumInc_Conf1)),
+                   rep("Confounded treatment allocation", nrow(CumInc_conf2)),
                    rep("Inverse probability weights", nrow(CumInc_IPW)),
                    rep("Outcome regression modeling", nrow(CumInc_OR)),
                    rep("Doubly robust estimator", nrow(CumInc_DR)))
@@ -241,7 +241,7 @@ csh2
 
 ### Scenario 3. Adjustment of confounding by logistic treatment allocation and non-linear outcome
 
-In this scheme, confounding is introduced as a logistic association between the treatments and continuious and discrete covariates. However, the relation between the continious covariate and outcome is incorporated as a piecewise linear effect of the continuous covariate on the baseline hazard, where if x1 > 1 returns the first element in `base_haz` for the baseline hazard, and the second element otherwise. Hence, if these two elements differ, a piecewise-linear effect is introduced on the baseline hazard. This effect may not accurately modeled by standard Cox proportional hazard regression methods. 
+In this scheme, confounding is introduced as a logistic association between the treatments and continuious and discrete covariates. However, the relation between the continuous covariate and outcome is incorporated as a piecewise linear effect of the continuous covariate on the baseline hazard, where if x1 > 1 returns the first element in `base_haz` for the baseline hazard, and the second element otherwise. Hence, if these two elements differ, a piecewise-linear effect is introduced on the baseline hazard. This effect may not accurately modeled by standard Cox proportional hazard regression methods. 
 
 ```{r}
 # Data simulation and biased sampling
@@ -265,17 +265,17 @@ df_conf3$ipw<- adjIPW(treatment ~ x1 + x2, data = df_conf3)
 
 # Perform adjustment and extract cumulative incidence curves
 CumInc_df <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df))
-CumInc_Conf1 <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df_conf3))
+CumInc_conf3 <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df_conf3))
 CumInc_IPW <- longCSH(survfit(Surv(obs_time, status) ~ treatment, 
                           data = df_conf3, weights = ipw))
-CumInc_OR <- gather(adjOR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+CumInc_OR <- gather(adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
               strata = "treatment", data = df_conf3), event, prob, 3:5)
-CumInc_DR <- gather(adjDR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+CumInc_DR <- gather(adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
               strata = "treatment", data = df_conf3), event, prob, 3:5)
 
-csh_CI <- rbind(CumInc_df, CumInc_Conf1, CumInc_IPW, CumInc_OR, CumInc_DR)
+csh_CI <- rbind(CumInc_df, CumInc_conf3, CumInc_IPW, CumInc_OR, CumInc_DR)
 csh_CI$method <- c(rep("Reference population", nrow(CumInc_df)),
-                   rep("Confounded treatment allocation", nrow(CumInc_Conf1)),
+                   rep("Confounded treatment allocation", nrow(CumInc_conf3)),
                    rep("Inverse probability weights", nrow(CumInc_IPW)),
                    rep("Outcome regression modeling", nrow(CumInc_OR)),
                    rep("Doubly robust estimator", nrow(CumInc_DR)))
@@ -290,10 +290,200 @@ csh3 <- ggplot(csh_CI, aes(x = time, y = prob, col = method, lty = method)) +
   facet_grid(strata ~ event) +
   geom_step(lwd = 1) + 
   ylim(0, 1) + 
-  labs(title = "Covariate adjustment on logistic treatment allocation", 
+  labs(title = "Covariate adjustment on logistic treatment allocation with piecewise-linear covariate", 
        col = "Method", 
        lty = "Method") 
 csh3
+```
+
+### Scenario 4. Adjustment of confounding by non-logistic treatment allocation and non-linear outcome
+
+In this scheme, confounding is introduced as a non-logistic association between the treatments and continuous and discrete covariates. Here, the composition of the treatment group is solely affected by the aforementioned association with the covariates. In addition, the relation between the continuous covariate and outcome is incorporated as a piecewise linear effect of the continuous covariate on the baseline hazard, where if x1 > 1 returns the first element in `base_haz` for the baseline hazard, and the second element otherwise. Hence, if these two elements differ, a piecewise-linear effect is introduced on the baseline hazard. This effect may not accurately modeled by standard Cox proportional hazard regression methods. 
+
+```{r}
+# Data simulation and biased sampling
+df <- simCSH(N = 10000, 
+               k = 2,  
+               theta_coef = c(-1, -0.5),
+               beta_coef = list(c(1, -1, 0.5), 
+                                c(-1, 1, -0.5)),
+               base_haz = c(2, -2))
+df_conf4 <- confCSH(N = 4000, 
+                    k = 2, 
+                    theta_coef = c(-1, -0.5),
+                    beta_coef = list(c(1, -1, 0.5), 
+                                     c(-1, 1, -0.5)),
+                    sample_coef = c(1, -1, 1),
+                    control_ref = TRUE,
+                    base_haz = c(2, -2))
+
+# Construct weights
+df_conf4$ipw<- adjIPW(treatment ~ x1 + x2, data = df_conf4)
+
+# Perform adjustment and extract cumulative incidence curves
+CumInc_df <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df))
+CumInc_conf4 <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df_conf4))
+CumInc_IPW <- longCSH(survfit(Surv(obs_time, status) ~ treatment, 
+                          data = df_conf4, weights = ipw))
+CumInc_OR <- gather(adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
+              strata = "treatment", ref = "control", data = df_conf4), event, prob, 3:5)
+CumInc_DR <- gather(adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
+              strata = "treatment", ref = "control", data = df_conf4), event, prob, 3:5)
+
+csh_CI <- rbind(CumInc_df, CumInc_conf4, CumInc_IPW, CumInc_OR, CumInc_DR)
+csh_CI$method <- c(rep("Reference population", nrow(CumInc_df)),
+                   rep("Confounded treatment allocation", nrow(CumInc_conf4)),
+                   rep("Inverse probability weights", nrow(CumInc_IPW)),
+                   rep("Outcome regression modeling", nrow(CumInc_OR)),
+                   rep("Doubly robust estimator", nrow(CumInc_DR)))
+csh_CI$method <- factor(csh_CI$method, levels = c("Reference population",
+                                                  "Confounded treatment allocation",
+                                                  "Inverse probability weights",
+                                                  "Outcome regression modeling",
+                                                  "Doubly robust estimator"))
+
+# Produce plot
+csh4 <- ggplot(csh_CI, aes(x = time, y = prob, col = method, lty = method)) + 
+  facet_grid(strata ~ event) +
+  geom_step(lwd = 1) + 
+  ylim(0, 1) + 
+  labs(title = "Covariate adjustment on non-logistic treatment allocation with piecewise-linear covariate", 
+       col = "Method", 
+       lty = "Method") 
+csh4
+```
+
+### Scenario 5. Violation of positivity assumption
+
+In this scenario, the positivity assumption is violated by drastically increasing the odds of being sampled under Z = 1 for Stage 1 patients. As a result, the probability of being sampled under Z = 0 for stage 1 patients is close to 0, and the distribution of propensity scores has become assymmetric as a result. We can also observe that the propensity scores are heavily skewed for Z = 1. 
+
+```{r}
+# Data simulation and biased sampling
+df <- simCSH(N = 10000, 
+               k = 2, 
+                    theta_coef = c(-1, -0.5),
+                    beta_coef = list(c(1, -1, 0.5), 
+                                     c(-1, 1, -0.5)),
+               base_haz = c(0, 0))
+df_conf5 <- confCSH(N = 4000, 
+                    k = 2, 
+                    theta_coef = c(-1, -0.5),
+                    beta_coef = list(c(1, -1, 0.5), 
+                                     c(-1, 1, -0.5)),
+                    sample_coef = c(6, -1, 1),
+                    control_ref = FALSE,
+                    base_haz = c(0, 0))
+
+# Construct weights
+df_conf5$ipw<- adjIPW(treatment ~ x1 + x2, data = df_conf5)
+
+# Perform adjustment and extract cumulative incidence curves
+CumInc_df <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df))
+CumInc_conf5 <- longCSH(survfit(Surv(obs_time, status) ~ treatment, data = df_conf5))
+CumInc_IPW <- longCSH(survfit(Surv(obs_time, status) ~ treatment, 
+                          data = df_conf5, weights = ipw))
+CumInc_OR <- gather(adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
+              strata = "treatment", data = df_conf5), event, prob, 3:5)
+CumInc_DR <- gather(adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
+              strata = "treatment", data = df_conf5), event, prob, 3:5)
+
+csh_CI <- rbind(CumInc_df, CumInc_conf5, CumInc_IPW, CumInc_OR, CumInc_DR)
+csh_CI$method <- c(rep("Reference population", nrow(CumInc_df)),
+                   rep("Confounded treatment allocation", nrow(CumInc_conf5)),
+                   rep("Inverse probability weights", nrow(CumInc_IPW)),
+                   rep("Outcome regression modeling", nrow(CumInc_OR)),
+                   rep("Doubly robust estimator", nrow(CumInc_DR)))
+csh_CI$method <- factor(csh_CI$method, levels = c("Reference population",
+                                                  "Confounded treatment allocation",
+                                                  "Inverse probability weights",
+                                                  "Outcome regression modeling",
+                                                  "Doubly robust estimator"))
+
+# Produce plot
+csh5 <- ggplot(csh_CI, aes(x = time, y = prob, col = method, lty = method)) + 
+  facet_grid(strata ~ event) +
+  geom_step(linewidth = 1) + 
+  ylim(0, 1) + 
+  labs(title = "Covariate adjustment on logistic treatment allocation", 
+       col = "Method", 
+       lty = "Method") 
+csh5
+```
+
+Below, we can validate the effects on the distribution of propensity scores and covariates among the two treatment groups. 
+
+```{r}
+# Plot distribution of covariates
+coef_plot <- ggplot(df_bias, aes(x = x2, 
+                                 fill = treatment,
+                                 col = treatment)) + 
+  facet_grid(. ~ x1) +
+  geom_histogram(aes(y = ifelse(after_stat(..count..) > 0,
+                                after_stat(..count..), NA)),
+                 data = ~ subset(., treatment == "control"), alpha = 0.5) +
+  geom_histogram(aes(y = ifelse(after_stat(-..count..) < 0, 
+                                after_stat(-..count..), NA)), 
+                 data = ~ subset(., treatment == "treat"), alpha = 0.5) +
+  annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf)+
+  annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf) +
+  annotate("segment", x=-Inf, xend=Inf, y=Inf, yend=Inf) +
+  annotate("segment", x=Inf, xend=Inf, y=-Inf, yend=Inf) +
+  theme_fira() +
+  theme(legend.position = "top",
+        axis.title.y = element_text(hjust = 0.5),
+        axis.title.x = element_text(hjust = 0.5)) +
+  labs(x = "Continuous covariate",
+       y = "Frequency", 
+       fill = "Exposure",
+       col = "Exposure") +
+  scale_y_continuous(limits = c(-200, 200), 
+                     breaks = seq(-200, 200, 50), 
+                     expand = c(0, 0)) +
+  scale_x_continuous(limits = c(-4, 4), 
+                     breaks = seq(-3, 3, 1), expand = c(0, 0)) 
+
+# Plot distribution of propensity scores
+score_plot <- ggplot(df_bias, aes(x = 1 / ipw, 
+                                  fill = treatment,
+                                  col = treatment)) + 
+  geom_histogram(aes(y = ifelse(after_stat(..count..) > 0,
+                                after_stat(..count..), NA)),
+                 data = ~ subset(., treatment == "control"), alpha = 0.5) +
+  geom_histogram(aes(y = ifelse(after_stat(-..count..) < 0, 
+                                after_stat(-..count..), NA)), 
+                 data = ~ subset(., treatment == "treat"), alpha = 0.5) +
+  annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf)+
+  annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf) +
+  annotate("segment", x=-Inf, xend=Inf, y=Inf, yend=Inf) +
+  annotate("segment", x=Inf, xend=Inf, y=-Inf, yend=Inf) +
+  theme_fira() + 
+  theme(legend.position = "top",
+        axis.title.y = element_text(hjust = 0.5),
+        axis.title.x = element_text(hjust = 0.5)) +
+  labs(x = "Propensity score",
+       y = "Frequency", 
+       fill = "Exposure",
+       col = "Exposure") +
+  scale_y_continuous(limits = c(-1500, 1500), 
+                     breaks = seq(-1500, 1500, 500)) 
+
+# Arrange plots
+plot_conf5a <- ggarrange(coef_plot, score_plot,
+                         nrow = 1, ncol = 2, 
+                         labels = c("A", "B"))
+plot_conf5a
+```
+
+Save in high-quality format.
+
+```{r}
+ggsave("sim_output/sim_conf5a.tiff", 
+       plot = plot_conf5a,
+       units = "in", 
+       width = 11.5, 
+       height = 4, 
+       dpi = 600, 
+       compression = "lzw")
 ```
 
 ## Simulation study
@@ -337,9 +527,9 @@ for(i in 1:B){
   sf_bias <- survfit(Surv(obs_time, status) ~ treatment, 
                      data = df_conf1, weights = ipw)
   CumInc_ipw <- summary(sf_bias, times = times, extend = T)$pstate
-  CumInc_or <- adjOR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+  CumInc_or <- adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
                  strata = "treatment", data = df_conf1, times = times)[, 3:5]
-  CumInc_dr <- adjDR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+  CumInc_dr <- adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
                  strata = "treatment", data = df_conf1, times = times)[, 3:5]
   
   # Calculate difference w/ true curve
@@ -401,7 +591,7 @@ sim_csh1
 
 ### Scenario 2. Simulation of confounding by non-logistic treatment allocation 
 
-A small simulation study using $B = 100$ iterations of data generation, adjustment, and substraction from the true curve. In this scheme, confounding is introduced as a non-logistic association between the treatments and continuious and discrete covariates. Here, the composition of the treatment group is solely affected by the afformentioned association with the covariates. The control group can be used as a reference group for the Outcome regression modeling and doubly robust method. Each plot shows the mean and interval between the 2.5th percentile and 97.5th percentile of the simulated differences with the true curve. 
+A small simulation study using $B = 100$ iterations of data generation, adjustment, and subtraction from the true curve. In this scheme, confounding is introduced as a non-logistic association between the treatments and continuous and discrete covariates. Here, the composition of the treatment group is solely affected by the aforementioned association with the covariates. The control group can be used as a reference group for the outcome regression modeling and doubly robust method. Each plot shows the mean and interval between the 2.5th percentile and 97.5th percentile of the simulated differences with the true curve. 
 
 ```{r}
 # start simulation
@@ -438,10 +628,10 @@ for(i in 1:B){
   sf_bias <- survfit(Surv(obs_time, status) ~ treatment, 
                      data = df_conf2, weights = ipw)
   CumInc_ipw <- summary(sf_bias, times = times, extend = T)$pstate
-  CumInc_or <- adjOR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+  CumInc_or <- adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
                 strata = "treatment", ref = "control",
                 data = df_conf2, times = times)[, 3:5]
-  CumInc_dr <- adjDR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+  CumInc_dr <- adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
                 strata = "treatment", ref = "control", 
                 data = df_conf2, times = times)[, 3:5]
   
@@ -504,7 +694,7 @@ sim_csh2
 
 ### Scenario 3. Simulation of confounding by logistic treatment allocation on non-linear outcome
 
-A small simulation study using $B = 1000$ iterations of data generation, adjustment, and substraction from the true curve. In this scheme, confounding is introduced as a logistic association between the treatments and continuious and discrete covariates. However, the relation between the continious covariate and outcome is incorporated as a piecewise linear effect, which may not accurately modeled via Cox proportional hazard regression methods. Note that to specifically illustrate the effect of the non-linear relationship of the continuous covariate on the hazard, the discrete covariate is excluded from the simulation. Each plot shows the mean and interval between the 2.5th percentile and 97.5th percentile of the simulated differences with the true curve. 
+A small simulation study using $B = 1000$ iterations of data generation, adjustment, and subtraction from the true curve. In this scheme, confounding is introduced as a logistic association between the treatments and continuious and discrete covariates. However, the relation between the continuous covariate and outcome is incorporated as a piecewise linear effect, which may not accurately modeled via Cox proportional hazard regression methods. Note that to specifically illustrate the effect of the non-linear relationship of the continuous covariate on the hazard, the discrete covariate is excluded from the simulation. Each plot shows the mean and interval between the 2.5th percentile and 97.5th percentile of the simulated differences with the true curve. 
 
 ```{r}
 # start simulation
@@ -541,9 +731,9 @@ for(i in 1:B){
   sf_bias <- survfit(Surv(obs_time, status) ~ treatment, 
                      data = df_conf3, weights = ipw)
   CumInc_ipw <- summary(sf_bias, times = times, extend = T)$pstate
-  CumInc_or <- adjOR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+  CumInc_or <- adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
                  strata = "treatment", data = df_conf3, times = times)[, 3:5]
-  CumInc_dr <- adjDR(Surv(obs_time, status) ~ treatment + x1 + x2, 
+  CumInc_dr <- adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
                  strata = "treatment", data = df_conf3, times = times)[, 3:5]
   
   # Calculate difference w/ true curve
@@ -604,6 +794,211 @@ sim_csh3 <- ggplot(output_se,
 sim_csh3
 ```
 
+### Scenario 4. Simulation of confounding by non-logistic treatment allocation on non-linear outcome
+
+A small simulation study using $B = 1000$ iterations of data generation, adjustment, and subtraction from the true curve. In this scheme, In this scheme, confounding is introduced as a non-logistic association between the treatments and continuous and discrete covariates. Here, the composition of the treatment group is solely affected by the aforementioned association with the covariates. In addition, the relation between the continuous covariate and outcome is incorporated as a piecewise linear effect, which may not accurately modeled via Cox proportional hazard regression methods. Note that to specifically illustrate the effect of the non-linear relationship of the continuous covariate on the hazard, the discrete covariate is excluded from the simulation. Each plot shows the mean and interval between the 2.5th percentile and 97.5th percentile of the simulated differences with the true curve. 
+
+```{r}
+# start simulation
+set.seed(1546732)
+
+# Generate true curve for user-specified timeframe
+times <- seq(0, 10, 0.25)
+CumInc_true <- trueCSH(time = times, 
+                    k = 2,
+                    theta_coef = c(-1, -0.5),
+                    beta_coef = list(c(1, -1, 0.5), 
+                                     c(-1, 1, -0.5)),
+                    base_haz = c(2, -2))
+
+B = 1000
+n_methods = 4
+deltas <- vector("list", B)
+for(i in 1:B){
+  
+  # Simulate data
+  df_conf4 <- confCSH(N = 4000, 
+                      k = 2, 
+                      theta_coef = c(-1, -0.5),
+                      beta_coef = list(c(1, -1, 0.5), 
+                                       c(-1, 1, -0.5)),
+                      sample_coef = c(1, -1, 1),
+                      control_ref = TRUE,
+                      base_haz = c(2, -2))
+  sf_bias <- survfit(Surv(obs_time, status) ~ treatment, data = df_conf4)
+  CumInc_bias <- summary(sf_bias, times = times, extend = T)$pstate
+  
+  # Adjustment methods
+  df_conf4$ipw<- adjIPW(treatment ~ x1 + x2, data = df_conf4)
+  sf_bias <- survfit(Surv(obs_time, status) ~ treatment, 
+                     data = df_conf4, weights = ipw)
+  CumInc_ipw <- summary(sf_bias, times = times, extend = T)$pstate
+  CumInc_or <- adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
+                strata = "treatment", ref = "control",
+                data = df_conf4, times = times)[, 3:5]
+  CumInc_dr <- adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
+                strata = "treatment", ref = "control", 
+                data = df_conf4, times = times)[, 3:5]
+  
+  # Calculate difference w/ true curve
+  tmp <- unname(cbind(rep(i, 2 * length(times) * n_methods),
+                      rep(times, 
+                          times = 2 * n_methods),
+                      rep(c("control", "treat"), 
+                          each = length(times), 
+                          times = n_methods),
+                      rep(c("1. Bias", 
+                            "2. IPW", 
+                            "3. OR", 
+                            "4. DR"), 
+                          each = 2 * length(times)),
+                      rbind(CumInc_bias - CumInc_true[, 3:5],
+                            CumInc_ipw - CumInc_true[, 3:5],
+                            CumInc_or - CumInc_true[, 3:5],
+                            CumInc_dr - CumInc_true[, 3:5])))
+  names(tmp) <- c("iteration", 
+                  "time", 
+                  "treatment", 
+                  "method",
+                  "event_free", 
+                  "event_1", 
+                  "event_2")
+  deltas[[i]] <- tmp
+  
+  # Denote iteration
+  print(paste("iteration", i, "of", B))
+}
+output <- do.call("rbind", deltas)
+output <- gather(output, event, delta, 5:7)
+write.xlsx(output, "sim_output/conf4_t00_t10.xlsx")
+```
+
+```{r}
+output <- read.xlsx("sim_output/conf4_t00_t10.xlsx")
+
+# Summarize output simulation study
+output_se <- aggregate(delta ~ time + treatment + method + event, 
+                       data = output, FUN = function (x) mean(x))
+output_se$ymin <- aggregate(delta ~ time + treatment + method + event, 
+                       data = output, FUN = function (x) quantile(x, 0.025))$delta
+output_se$ymax <- aggregate(delta ~ time + treatment + method + event, 
+                       data = output, FUN = function (x) quantile(x, 0.975))$delta
+
+# Visualize results
+sim_csh4 <- ggplot(output_se, 
+                   aes(x = time, y = delta, col = treatment)) + 
+  geom_line(lwd = 1) + 
+  facet_grid(event ~ method) +
+  geom_ribbon(data = output_se, 
+              mapping = aes(ymin = ymin, ymax = ymax), 
+              alpha = 0.2) +
+  ylim(-0.3, 0.3) + 
+  ggtitle("Covariate adjustment on non-logistic treatment allocation 
+       with non-linear outcome effect of continuous covariate") 
+sim_csh4
+```
+
+### Scenario 5. Violation of the positivity assumption
+
+A simulation study using $B = 1000$ iterations of data generation, adjustment, and subtraction from the true curve. In this scheme, confounding is introduced as a logistic association between the treatments and continuous and discrete covariates. In addition, the positivity assumption has become violated by drastically increasing the odds of being sampled under Z = 1 for Stage 1 patients.
+
+```{r}
+# start simulation
+set.seed(1546732)
+
+# Generate true curve for user-specified timeframe
+times <- seq(0, 1.5, 0.05)
+CumInc_true <- trueCSH(time = times, 
+                    k = 2, 
+                    theta_coef = c(-1, -0.5),
+                    beta_coef = list(c(1, -1, 0.5), 
+                                     c(-1, 1, -0.5)),
+                    base_haz = c(0, 0))
+
+B = 1000
+n_methods = 4
+deltas <- vector("list", B)
+for(i in 1:B){
+  
+  # Simulate data
+  df_conf5 <- confCSH(N = 4000, 
+                      k = 2,
+                      theta_coef = c(-1, -0.5),
+                      beta_coef = list(c(1, -1, 0.5), 
+                                       c(-1, 1, -0.5)),
+                      sample_coef = c(6, -1, 1),
+                      control_ref = FALSE,
+                      base_haz = c(0, 0))
+  sf_bias <- survfit(Surv(obs_time, status) ~ treatment, data = df_conf5)
+  CumInc_bias <- summary(sf_bias, times = times, extend = T)$pstate
+  
+  # IPW correction
+  df_conf5$ipw<- adjIPW(treatment ~ x1 + x2, data = df_conf5)
+  sf_bias <- survfit(Surv(obs_time, status) ~ treatment, 
+                     data = df_conf5, weights = ipw)
+  CumInc_ipw <- summary(sf_bias, times = times, extend = T)$pstate
+  CumInc_or <- adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, 
+                 strata = "treatment", data = df_conf5, times = times)[, 3:5]
+  CumInc_dr <- adjDR(Hist(obs_time, status) ~ treatment + x1 + x2, 
+                 strata = "treatment", data = df_conf5, times = times)[, 3:5]
+  
+  # Calculate difference w/ true curve
+  tmp <- unname(cbind(rep(i, 2 * length(times) * n_methods),
+                      rep(times, 
+                          times = 2 * n_methods),
+                      rep(c("control", "treat"), 
+                          each = length(times), 
+                          times = n_methods),
+                      rep(c("1. Bias", 
+                            "2. IPW", 
+                            "3. OR", 
+                            "4. DR"), 
+                          each = 2 * length(times)),
+                      rbind(CumInc_bias - CumInc_true[, 3:5],
+                            CumInc_ipw - CumInc_true[, 3:5],
+                            CumInc_or - CumInc_true[, 3:5],
+                            CumInc_dr - CumInc_true[, 3:5])))
+  names(tmp) <- c("iteration", 
+                  "time", 
+                  "treatment", 
+                  "method",
+                  "event_free", 
+                  "event_1", 
+                  "event_2")
+  deltas[[i]] <- tmp
+  
+  # Denote iteration
+  print(paste("iteration", i, "of", B))
+}
+output <- do.call("rbind", deltas)
+output <- gather(output, event, delta, 5:7)
+write.xlsx(output, "sim_output/conf5_t00_t15.xlsx")
+```
+
+```{r}
+output <- read.xlsx("sim_output/conf5_t00_t15.xlsx")
+
+# Summarize output simulation study
+output_se <- aggregate(delta ~ time + treatment + method + event, 
+                       data = output, FUN = function (x) mean(x))
+output_se$ymin <- aggregate(delta ~ time + treatment + method + event, 
+                       data = output, FUN = function (x) quantile(x, 0.025))$delta
+output_se$ymax <- aggregate(delta ~ time + treatment + method + event, 
+                       data = output, FUN = function (x) quantile(x, 0.975))$delta
+
+# Visualize results
+sim_csh5 <- ggplot(output_se, 
+                   aes(x = time, y = delta, col = treatment)) + 
+  geom_line(lwd = 1) + 
+  facet_grid(event ~ method) +
+  geom_ribbon(data = output_se, 
+              mapping = aes(ymin = ymin, ymax = ymax), 
+              alpha = 0.2) +
+  ylim(-0.3, 0.3) + 
+  ggtitle("Covariate adjustment with violated positivity assumption") 
+sim_csh5
+```
+
 ### Bias and RMSE table
 
 A table is added, indicating the bias and RMSE at the given time point within the range of simulated event times for each method of confounding. 
@@ -611,8 +1006,9 @@ A table is added, indicating the bias and RMSE at the given time point within th
 ```{r}
 sim_output <- list(read.xlsx("sim_output/conf1_t00_t15.xlsx"),
                    read.xlsx("sim_output/conf2_t00_t15.xlsx"),
-                   read.xlsx("sim_output/conf3_t00_t10.xlsx"))
-ref_times <- c(0.8, 0.8, 5) 
+                   read.xlsx("sim_output/conf3_t00_t10.xlsx"),
+                   read.xlsx("sim_output/conf4_t00_t10.xlsx"))
+ref_times <- c(0.8, 0.8, 5, 5) 
 for(i in 1:length(sim_output)){
   sim_output[[i]] <- sim_output[[i]][sim_output[[i]]$time == ref_times[i], ]
   sim_output[[i]]$scheme <- rep(paste("conf", i), nrow(sim_output[[i]]))
@@ -647,7 +1043,8 @@ Combine the plots from each simulation study into one format.
 ```{r}
 sim_output <- list(read.xlsx("sim_output/conf1_t00_t15.xlsx"),
                    read.xlsx("sim_output/conf2_t00_t15.xlsx"),
-                   read.xlsx("sim_output/conf3_t00_t10.xlsx"))
+                   read.xlsx("sim_output/conf3_t00_t10.xlsx"),
+                   read.xlsx("sim_output/conf4_t00_t10.xlsx"))
 for(i in 1:length(sim_output)){
   sim_output[[i]]$scheme <- rep(paste("conf", i), nrow(sim_output[[i]]))
 }
@@ -668,7 +1065,8 @@ sim_summary$maxy <- aggregate(delta ~ scheme + time + treatment + method + event
 sim_summary[, c(1, 3:5)] <- lapply(sim_summary[, c(1, 3:5)], as.factor)
 levels(sim_summary$scheme) <- c("No misspecification", 
                                 "Misspecified treatment", 
-                                "Misspecified outcome")
+                                "Misspecified outcome",
+                                "Both misspecified")
 levels(sim_summary$method) <- c("Crude estimator", 
                                 "Inverse probability \n weighting", 
                                 "Outcome regression", 
@@ -746,14 +1144,37 @@ plot_conf3 <- ggplot(sim_summary[sim_summary$scheme == "Misspecified outcome", ]
 plot_conf3
 ```
 
+```{r}
+plot_conf4 <- ggplot(sim_summary[sim_summary$scheme == "Both misspecified", ],
+                     aes(x = time, y = delta, colour = treatment)) +
+  facet_grid(event ~ method) + 
+  geom_hline(yintercept = 0, lwd = 1, col = "#FFCC66", lty = 2) +
+  geom_ribbon(aes(ymin = miny, ymax = maxy, x = time), alpha = 0.3) + 
+  geom_line(lwd = 1) +
+  ylim(-0.2, 0.2) + 
+  labs(title = "Both models misspecified",
+       x = "Time",
+       y = "Difference from true curve",
+       colour = "Exposure") +
+  annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf)+
+  annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf) +
+  scale_x_continuous(expand = c(0, 0),
+                     breaks = c(0, 2.5, 5.0, 7.5)) +
+  theme_fira() +
+  theme(legend.position = "bottom",
+        legend.margin = margin(t = -10))
+plot_conf4
+```
+
 Arrange and save the final format.
 
 ```{r}
 plot_confs <- ggarrange(plot_conf1, 
                         plot_conf2,
                         plot_conf3,
-                        labels = c("A", "B", "C"), 
-                        ncol = 1, nrow = 3)
+                        plot_conf4,
+                        labels = c("A", "B", "C", "D"), 
+                        ncol = 1, nrow = 4)
 plot_confs
 ```
 
@@ -763,6 +1184,101 @@ ggsave("sim_output/sim_plot.tiff",
        units = "in", 
        width = 11.5, 
        height = 16, 
-       dpi = 300, 
+       dpi = 600, 
        compression = "lzw")
+```
+
+### Visualization simulation of violated positivity assumption
+
+Visualize the results from the simulation study with violated positivity. 
+
+```{r}
+sim_output <- read.xlsx("sim_output/conf5_t00_t15.xlsx")
+
+# Summarize output simulation study
+sim_summary <- aggregate(delta ~ time + treatment + method + event, 
+                       data = sim_output, 
+                       FUN = function (x) mean(x))
+sim_summary$miny <- aggregate(delta ~ time + treatment + method + event, 
+                       data = sim_output, 
+                       FUN = function (x) quantile(x, 0.025))$delta
+sim_summary$maxy <- aggregate(delta ~ time + treatment + method + event, 
+                       data = sim_output, 
+                       FUN = function (x) quantile(x, 0.975))$delta
+
+# Adjust labels
+sim_summary[, 2:4] <- lapply(sim_summary[, 2:4], as.factor)
+levels(sim_summary$method) <- c("Crude estimator", 
+                                "Inverse probability \n weighting", 
+                                "Outcome regression", 
+                                "Doubly robust")
+levels(sim_summary$treatment) <- c("Control", 
+                                "Treatment")
+levels(sim_summary$event) <- c("Event 1", 
+                               "Event 2", 
+                               "Event free")
+```
+
+```{r}
+plot_conf5 <- ggplot(sim_summary,
+                     aes(x = time, y = delta, colour = treatment)) +
+  facet_grid(event ~ method) + 
+  geom_hline(yintercept = 0, lwd = 1, col = "#FFCC66", lty = 2) +
+  geom_ribbon(aes(ymin = miny, ymax = maxy, x = time), alpha = 0.3) + 
+  geom_line(lwd = 1) +
+  labs(title = "Violated positivity assumption",
+       x = "Time",
+       y = "Difference from true curve",
+       colour = "Exposure") +
+  annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf)+
+  annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf) +
+  scale_x_continuous(expand = c(0, 0), 
+                     breaks = c(0, 0.4, 0.8, 1.2)) +
+  scale_y_continuous(limits = c(-0.4, 0.4),
+                     breaks = seq(-0.4, 0.4, 0.2)) +
+  theme_fira() + 
+  theme(legend.position = "bottom",
+        legend.margin = margin(t = -10))
+plot_conf5
+```
+
+```{r}
+plot_conf5b <- ggarrange(plot_conf5,
+                         nrow = 1, ncol = 1, 
+                         labels = "C")
+ggsave("sim_output/sim_conf5b.tiff", 
+       plot = plot_conf5b,
+       units = "in", 
+       width = 11.5, 
+       height = 4, 
+       dpi = 600, 
+       compression = "lzw")
+```
+
+In addition, the bias and RMSE table. 
+
+```{r}
+sim_output <- read.xlsx("sim_output/conf5_t00_t15.xlsx")
+sim_output <- sim_output[sim_output$time == 0.8, ]
+sim_output$scheme <- rep("conf 5", nrow(sim_output))
+
+# Summarize output simulation study (Bias & RMSE)
+sim_bias <- aggregate(delta ~ method + treatment + event, 
+                      data = sim_output, 
+                      FUN = mean)
+sim_bias$RMSE <- aggregate(delta ~ method + treatment + event, 
+                      data = sim_output, 
+                      FUN = function(x) sqrt(mean(x^2)))$delta
+sim_bias[, 1:3] <- lapply(sim_bias[, 1:3], as.factor)
+
+# Convert to table format
+sim_table <- sim_bias %>% 
+  nest(delta, RMSE, .key = "value_col") %>%
+  spread(key = event, value = value_col) %>%
+  unnest(event_1, event_2, event_free, .sep = "_")
+as.data.frame(sim_table)
+```
+
+```{r}
+write.xlsx(sim_table, "sim_output/output_table_conf5.xlsx")
 ```
