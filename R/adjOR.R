@@ -23,73 +23,73 @@
 #'   strata = "treatment", times = seq(0, 1.5, 0.05))
 
 adjOR <- function(formula, strata, ref = NULL, data = NULL, times = NULL){
-  
+
   # Extract components from formula object and convert to model matrix
-  
+
   tmp <- model.frame(formula, data = data)[, -1]
   tmp_hist <- eval(formula[[2]], envir = data)
-  tmp <- cbind(data.frame(time = tmp_hist[, "time"], 
+  tmp <- cbind(data.frame(time = tmp_hist[, "time"],
                           status = getEvent(tmp_hist)), tmp)
   tmp$status <- as.character(tmp$status)
   tmp$status[tmp_hist[, 2] == "0"] <- "0"
   names(tmp)[which(names(tmp) == strata)] <- "strata"
-  tmp$strata <- factor(paste0(strata, "=", tmp$strata)) 
-  tmp <- tmp[, c(which(colnames(tmp) %in% c("time", "status", "strata")), 
+  tmp$strata <- factor(paste0(strata, "=", tmp$strata))
+  tmp <- tmp[, c(which(colnames(tmp) %in% c("time", "status", "strata")),
                  which(!colnames(tmp) %in% c("time", "status", "strata")))]
-  names(tmp) <- gsub(".*\\$", "", names(tmp)) 
-  
+  names(tmp) <- gsub(".*\\$", "", names(tmp))
+
   # Produce csc model
   pred <- paste(names(tmp)[3:ncol(tmp)], collapse = " + ")
   cox_formula <- formula(paste0("Hist(time, status)", "~" , pred))
   df_csc <- CSC(cox_formula, data = tmp)
-  
+
   # Prediction times
   if(is.null(times)){
     xtime <- sort(unique(c(0, tmp$time)))
   } else {
-    xtime <- times 
+    xtime <- times
   }
-  
+
   # Construct dummy data w/ every observation for each strata
   if(is.null(ref)){
-    dummy <- do.call("rbind", 
-                     replicate(nlevels(tmp$strata), tmp[, -3], 
+    dummy <- do.call("rbind",
+                     replicate(nlevels(tmp$strata), tmp[, -3],
                                simplify = F))
-    dummy <- cbind(strata = rep(levels(tmp$strata), each = nrow(tmp)), 
+    dummy <- cbind(strata = rep(levels(tmp$strata), each = nrow(tmp)),
                    dummy)
   } else {
-    dummy <- do.call("rbind", 
-                     replicate(nlevels(tmp$strata), 
+    dummy <- do.call("rbind",
+                     replicate(nlevels(tmp$strata),
                                tmp[tmp$strata == paste0(strata, "=", ref), -3],
                                simplify = F))
-    dummy <- cbind(strata = rep(levels(tmp$strata), 
-                                each = nrow(tmp[tmp$strata == paste0(strata, "=", ref),])), 
+    dummy <- cbind(strata = rep(levels(tmp$strata),
+                                each = nrow(tmp[tmp$strata == paste0(strata, "=", ref),])),
                    dummy)
   }
   dummy <- dummy[, c(-2:-3)]
-  
+
   # Take mean curve per strata for each status
   curves <- vector("list", length(df_csc$causes))
   for(i in 1:length(df_csc$causes)){
-    csc_pred <- predict(df_csc, 
-                        newdata = dummy, 
-                        times = xtime, 
+    csc_pred <- predict(df_csc,
+                        newdata = dummy,
+                        times = xtime,
                         cause = df_csc$causes[i])
     curves_i <- vector("list", nlevels(tmp$strata))
     for(j in 1:nlevels(tmp$strata)){
-      index <- 1:(nrow(dummy) / nlevels(tmp$strata)) + 
+      index <- 1:(nrow(dummy) / nlevels(tmp$strata)) +
         (j - 1) * (nrow(dummy) / nlevels(tmp$strata))
       curves_i[[j]] <- colMeans(csc_pred$absRisk[index, ])
     }
     curves[[i]] <- do.call("c", curves_i)
   }
-  
+
   # Combine states and construct output
   curves_output <- do.call("cbind", curves)
   curves_output <- cbind(1 - rowSums(curves_output), curves_output)
   colnames(curves_output) <- c("(s0)", df_csc$causes)
   output <- cbind(data.frame(time = rep(xtime, times = nlevels(tmp$strata)),
-                             strata = factor(rep(levels(tmp$strata), 
+                             strata = factor(rep(levels(tmp$strata),
                                                  each = length(xtime)))),
                   curves_output)
   return(output)
