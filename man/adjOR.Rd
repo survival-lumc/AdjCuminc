@@ -7,7 +7,7 @@
 adjOR(formula, strata, ref = NULL, data = NULL, times = NULL)
 }
 \arguments{
-\item{formula}{Object containing a `Surv()` object as the response, and the strata and covariates as the predictors.}
+\item{formula}{Object containing a `Hist()` object as the response, and the strata and covariates as the predictors. Censored values should be indicated by a 0 in the status variable.}
 
 \item{strata}{A character string used to identify the strata within the `formula` object.}
 
@@ -28,6 +28,6 @@ df <- simCSH(N = 1000, k = 2,
   theta_coef = c(-1, -0.5),
   beta_coef = list(c(1, -1, 0.5), c(-1, 1, -0.5)),
   base_haz = c(2, -2))
-df_OR <- adjOR(Surv(obs_time, status) ~ treatment + x1 + x2, data = df,
+df_OR <- adjOR(Hist(obs_time, status) ~ treatment + x1 + x2, data = df,
   strata = "treatment", times = seq(0, 1.5, 0.05))
 }
