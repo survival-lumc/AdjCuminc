@@ -7,7 +7,7 @@
 adjDR(formula, strata, ref = NULL, data = NULL, times = NULL)
 }
 \arguments{
-\item{formula}{Object containing a `Surv()` object as the response, and the strata and covariates as the predictors.}
+\item{formula}{Object containing a `Hist()` object as the response, and the strata and covariates as the predictors. Censored values should be indicated by a 0 in the status variable.}
 
 \item{strata}{A character string used to identify the strata within the `formula` object.}
 
