@@ -51,22 +51,23 @@ adjDR <- function(formula, strata, ref = NULL, data = NULL, times = NULL){
   }
 
   # Construct dummy data w/ every observation for each strata
-  if(is.null(ref)){
-    dummy <- do.call("rbind",
-                     replicate(nlevels(tmp$strata), tmp[, -3],
-                               simplify = F))
-    dummy <- cbind(strata = rep(levels(tmp$strata), each = nrow(tmp)),
-                   dummy)
-  } else {
-    dummy <- do.call("rbind",
-                     replicate(nlevels(tmp$strata),
-                               tmp[tmp$strata == paste0(strata, "=", ref), -3],
-                               simplify = F))
-    dummy <- cbind(strata = rep(levels(tmp$strata),
-                                each = nrow(tmp[tmp$strata == paste0(strata, "=", ref),])),
-                   dummy)
-  }
+  dummy <- do.call("rbind",
+                   replicate(nlevels(tmp$strata), tmp[, -3],
+                             simplify = F))
+  dummy <- cbind(strata = rep(levels(tmp$strata), each = nrow(tmp)),
+                 dummy)
   dummy <- dummy[, c(-2:-3)]
+
+  if(!is.null(ref)) {
+    dummy_ref <- do.call("rbind",
+                         replicate(nlevels(tmp$strata),
+                                   tmp[tmp$strata == paste0(strata, "=", ref), -3],
+                                   simplify = F))
+    dummy_ref <- cbind(strata = rep(levels(tmp$strata),
+                                    each = nrow(tmp[tmp$strata == paste0(strata, "=", ref),])),
+                       dummy_ref)
+    dummy_ref <- dummy_ref[, c(-2:-3)]
+  }
 
   # Construct pseudo-observations
   pseudo_obs <- prodlim(Hist(time, status) ~ 1, data = tmp, type = "risk")
@@ -80,13 +81,17 @@ adjDR <- function(formula, strata, ref = NULL, data = NULL, times = NULL){
                         cause = df_csc$causes[i])
     curves_i <- vector("list", length(df_csc$causes))
 
+    if(!is.null(ref)) {
+      csc_pred_ref <- predict(df_csc,
+                              newdata = dummy_ref,
+                              times = xtime,
+                              cause = df_csc$causes[i])
+    }
+
     # Extract pseudo observations
     pseudo_k <- t(jackknife(pseudo_obs,
                             times = xtime,
                             cause = df_csc$causes[i]))
-    if(!is.null(ref)) {
-      pseudo_k <- pseudo_k[, tmp$strata == paste0(strata,"=",ref)]
-    }
 
     for(j in 1:nlevels(tmp$strata)){
 
@@ -96,25 +101,30 @@ adjDR <- function(formula, strata, ref = NULL, data = NULL, times = NULL){
                                     pred_ipw))
       ipw_model <- glm(ipw_formula, data = tmp, family = "binomial")
       pscores <- predict(ipw_model, type = "response")
-      if(!is.null(ref)) {
-        pscores <- pscores[tmp$strata == paste0(strata, "=", ref)]
-      }
 
       # Extract ROS estimator
       index <- 1:(nrow(dummy) / nlevels(tmp$strata)) +
         (j - 1) * (nrow(dummy) / nlevels(tmp$strata))
       I_ROS <- t(csc_pred$absRisk[index, ])
 
+      if(!is.null(ref)) {
+        index_ref <- 1:(nrow(dummy_ref) / nlevels(tmp$strata)) +
+          (j - 1) * (nrow(dummy_ref) / nlevels(tmp$strata))
+        I_ROS_ref <- t(csc_pred_ref$absRisk[index_ref, ])
+      }
+
       # Calculate doubly robust estimator
       ind_z <- as.numeric(tmp$strata == levels(tmp$strata)[j])
-      if(!is.null(ref)) {ind_z <- ind_z[tmp$strata == paste0(strata, "=", ref)]}
-      DR_est <- matrix(NA, nrow = length(xtime), ncol = ncol(pseudo_k))
+      IPW_est <- matrix(NA, nrow = length(xtime), ncol = ncol(pseudo_k))
+      OR_est <- matrix(NA, nrow = length(xtime), ncol = ncol(pseudo_k))
       for(l in 1:length(xtime)){
-        DR_est[l, ] <- ((ind_z * pseudo_k[l, ]) -
-                          ((ind_z - pscores) * I_ROS[l, ])) /
-          pscores
+        IPW_est[l, ] <- ((ind_z * (pseudo_k[l, ] - I_ROS[l, ])) / pscores)
       }
-      curves_i[[j]] <- rowMeans(DR_est)
+      if(is.null(ref)){
+        curves_i[[j]] <- rowMeans(IPW_est) + rowMeans(I_ROS)
+      } else {
+        curves_i[[j]] <- rowMeans(IPW_est) + rowMeans(I_ROS_ref)
+      }
     }
     curves[[i]] <- do.call("c", curves_i)
   }
